@@ -178,3 +178,14 @@ def insert_audit_log(
     )
     conn.commit()
 
+
+
+def insert_audit_log_with_conn(conn, actor_id: str, action: str, resource: str, decision: str, payload: dict) -> None:
+    """使用已有数据库连接插入审计日志，避免重复打开连接导致锁定。"""
+    from agentops_assessment.backend.database import encode_json, now_iso
+    safe_payload = {k: v for k, v in payload.items() if k not in ["vendor_secret", "unit_cost_usd", "contract_detail", "debug", "candidate_note"]}
+    conn.execute(
+        "INSERT INTO audit_logs (actor_id, action, resource, decision, payload_json, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+        (actor_id, action, resource, decision, encode_json(safe_payload), now_iso())
+    )
+    conn.commit()

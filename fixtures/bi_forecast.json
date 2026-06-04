@@ -1,0 +1,10 @@
+[
+  {
+    "sku": "SKU-001",
+    "forecast_units_next_14d": 180
+  },
+  {
+    "sku": "SKU-002",
+    "forecast_units_next_14d": 80
+  }
+]

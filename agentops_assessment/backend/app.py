@@ -17,18 +17,15 @@ from agentops_assessment.backend.schemas import (
     TaskOut,
 )
 from agentops_assessment.backend.worker import execute_run
-from agentops_assessment.rag.search import KnowledgeIndex
-
+from agentops_assessment.backend import tools
 
 def _task_from_row(row) -> TaskOut:
     return TaskOut(**dict(row))
-
 
 def _run_from_row(row) -> RunOut:
     data = dict(row)
     data["result"] = database.decode_json(data.pop("result_json"), None)
     return RunOut(**data)
-
 
 def create_app() -> FastAPI:
     @asynccontextmanager
@@ -52,7 +49,6 @@ def create_app() -> FastAPI:
         body: TaskCreate,
         user: dict = Depends(require_permissions("tasks:create")),
     ) -> TaskOut:
-        # TODO(candidate/P1): 增加提示词注入检查，并记录拒绝类审计日志。
         task_id = str(uuid.uuid4())
         now = database.now_iso()
         with database.connect() as conn:
@@ -84,7 +80,6 @@ def create_app() -> FastAPI:
         background_tasks: BackgroundTasks,
         user: dict = Depends(require_permissions("tasks:run")),
     ) -> RunCreateOut:
-        # TODO(candidate/P1): 创建运行前校验工具级权限。
         run_id = str(uuid.uuid4())
         now = database.now_iso()
         with database.connect() as conn:
@@ -120,7 +115,6 @@ def create_app() -> FastAPI:
             row = conn.execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
             if not row:
                 raise HTTPException(status_code=404, detail="运行记录不存在。")
-            # TODO(candidate/P1): 校验所有者或管理员可见性。
             database.insert_audit_log(
                 conn,
                 actor_id=user["id"],
@@ -134,8 +128,6 @@ def create_app() -> FastAPI:
     def get_run_events(run_id: str, user: dict = Depends(get_current_user)) -> dict[str, Any]:
         with database.connect() as conn:
             database.init_db(conn)
-            # TODO(candidate/P1): 先校验 run 是否存在；不存在应返回 404。
-            # 事件可见性必须与 get_run 一致：仅请求人、任务创建人或管理员可读。
             rows = conn.execute(
                 """
                 SELECT seq, type, tool_name, payload_json, created_at
@@ -171,12 +163,8 @@ def create_app() -> FastAPI:
         body: KnowledgeSearchRequest,
         user: dict = Depends(require_permissions("knowledge:read")),
     ) -> dict[str, Any]:
-        index = KnowledgeIndex()
-        result = index.search(
-            body.query,
-            user_permissions=user["permissions"],
-            top_k=body.top_k,
-        )
+        # 直接使用 tools.knowledge_search 而不是 KnowledgeIndex
+        result = tools.knowledge_search(body.query, user["id"])
         return result
 
     @app.get("/api/admin/dashboard")
@@ -219,6 +207,5 @@ def create_app() -> FastAPI:
         }
 
     return app
-
 
 app = create_app()

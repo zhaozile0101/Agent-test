@@ -1,0 +1,14 @@
+[
+  {
+    "supplier_id": "SUP-001",
+    "risk_level": "high",
+    "risk_summary": "\u4f9b\u5e94\u5546\u8fd1\u671f\u4ea7\u80fd\u4e0d\u8db3",
+    "last_assessed": "2025-01-15"
+  },
+  {
+    "supplier_id": "SUP-002",
+    "risk_level": "low",
+    "risk_summary": "\u4f9b\u5e94\u5546\u7a33\u5b9a",
+    "last_assessed": "2025-01-20"
+  }
+]

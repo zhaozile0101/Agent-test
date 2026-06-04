@@ -1,0 +1,16 @@
+[
+  {
+    "sku": "SKU-001",
+    "warehouse": "WH-SH-01",
+    "stock": 50,
+    "safety_stock": 120,
+    "supplier_id": "SUP-001"
+  },
+  {
+    "sku": "SKU-002",
+    "warehouse": "WH-SH-01",
+    "stock": 200,
+    "safety_stock": 100,
+    "supplier_id": "SUP-002"
+  }
+]
